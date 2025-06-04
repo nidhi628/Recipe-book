@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Catering System with Cart & Orders</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;500;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #f5f7fa;
+      --card: #fff;
+      --text: #222;
+      --accent: #007bff;
+      --accent-hover: #0056b3;
+    }
+    body.dark-mode {
+      --bg: #1e1e1e;
+      --card: #2a2a2a;
+      --text: #eee;
+      --accent: #3399ff;
+      --accent-hover: #2266bb;
+    }
+    body {
+      font-family: 'Poppins', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      margin: 0;
+      padding: 0;
+      transition: all 0.3s ease;
+    }
+    .container {
+      max-width: 900px;
+      margin: auto;
+      padding: 20px;
+    }
+    h2, h3 {
+      text-align: center;
+    }
+    label {
+      display: block;
+      margin-top: 10px;
+    }
+    input, select, button {
+      width: 100%;
+      padding: 10px;
+      margin: 5px 0 15px;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+      font-size: 1rem;
+    }
+    button {
+      background: var(--accent);
+      color: #fff;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    button:hover {
+      background: var(--accent-hover);
+    }
+    .hidden { display: none; }
+    .menu-item {
+      display: flex;
+      align-items: center;
+      background: var(--card);
+      margin: 10px 0;
+      padding: 10px;
+      border-radius: 10px;
+      animation: fadeIn 0.5s ease-in-out;
+    }
+    .menu-item img {
+      width: 70px;
+      height: 70px;
+      object-fit: cover;
+      border-radius: 8px;
+      margin-right: 10px;
+      filter: drop-shadow(2px 2px 2px gray);
+    }
+    .menu-details { flex-grow: 1; }
+    .cart-summary, .order-status {
+      background: var(--card);
+      padding: 15px;
+      border-radius: 10px;
+      margin-top: 20px;
+    }
+    .theme-toggle {
+      text-align: right;
+      margin-bottom: 10px;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+  </style>
+</head>
+<body>
+<div class="container">
+  <div class="theme-toggle">
+    <button onclick="toggleTheme()">Toggle Dark Mode</button>
+  </div>
+
+  <h2>🍽️ User Registration / Login</h2>
+  <div id="auth">
+    <input type="text" id="username" placeholder="Username">
+    <input type="password" id="password" placeholder="Password">
+    <button onclick="register()">Register</button>
+    <button onclick="login()">Login</button>
+    <p id="authMessage"></p>
+  </div>
+
+  <div id="menuSection" class="hidden">
+    <h3>📋 Menu</h3>
+    <select onchange="filterMenu(this.value)">
+      <option value="all">All</option>
+      <option value="veg">Veg</option>
+      <option value="non-veg">Non-Veg</option>
+    </select>
+    <div id="menuList"></div>
+    <button onclick="viewCart()">View Cart</button>
+  </div>
+
+  <div id="cartSection" class="cart-summary hidden">
+    <h3>Your Cart 🛒</h3>
+    <ul id="cartItems"></ul>
+    <p>Total: ₹<span id="cartTotal">0</span></p>
+    <label>Payment Method:</label>
+    <select id="paymentMethod">
+      <option value="Cash on Delivery">Cash on Delivery</option>
+      <option value="UPI">UPI</option>
+      <option value="Card">Card</option>
+    </select>
+    <label>Your Name:</label>
+    <input type="text" id="customerName" placeholder="Full Name">
+    <label>Contact Number:</label>
+    <input type="text" id="contactNumber" placeholder="Contact">
+    <button onclick="placeOrder()">Place Order</button>
+  </div>
+
+  <div id="orderStatus" class="order-status hidden">
+    <h3>🎟️ Order Receipt</h3>
+    <p><strong>Customer Name:</strong> <span id="receiptName"></span></p>
+    <p><strong>Contact:</strong> <span id="receiptContact"></span></p>
+    <p><strong>Payment:</strong> <span id="receiptPayment"></span></p>
+    <p><strong>Date & Time:</strong> <span id="receiptDate"></span></p>
+    <p><strong>Total Paid:</strong> ₹<span id="receiptTotal"></span></p>
+    <p>Tracking ID: <span id="orderId"></span></p>
+    <p>Status: <strong>Preparing</strong></p>
+    <p>🙏 Thank you for ordering with us!</p>
+    <button onclick="window.print()">Print Receipt</button>
+  </div>
+</div>
+
+<script>
+  const menuItems = [
+    { name: "Paneer Butter Masala", type: "veg", price: 250, img: "https://vegecravings.com/wp-content/uploads/2017/04/paneer-butter-masala-recipe-step-by-step-instructions-500x500.jpg" },
+    { name: "Chole Bhature", type: "veg", price: 150, img: "https://www.happy-tummy.co.in/wp-content/uploads/2020/07/Chole-Bhature-scaled.jpg" },
+    { name: "Butter Chicken", type: "non-veg", price: 300, img: "https://www.licious.in/blog/wp-content/uploads/2020/10/butter-chicken--600x600.jpg" },
+    { name: "Fish Curry", type: "non-veg", price: 280, img: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTT44C1D00MD9Bv4_OzXhxRVjxIoMcVTmOL0GOjjEAc5wAQZrsRLDuPwoMpVG_Lg7lTEGk&usqp=CAU" },
+    { name: "Veg Biryani", type: "veg", price: 180, img: "https://pipingpotcurry.com/wp-content/uploads/2019/09/Vegetable-Biryani-Instant-Pot-Piping-Pot-Curry-4.jpg" },
+    { name: "Chicken Biryani", type: "non-veg", price: 220, img: "https://ministryofcurry.com/wp-content/uploads/2024/06/chicken-biryani-5.jpg" },
+    { name: "Palak Paneer", type: "veg", price: 200, img: "https://www.indianveggiedelight.com/wp-content/uploads/2017/10/palak-paneer-recipe-featured.jpg" },
+    { name: "Mutton Rogan Josh", type: "non-veg", price: 350, img: "https://lh4.googleusercontent.com/proxy/wuPpW9ygCei7JoFmULDb6WfmIj4E9gtBPZvENlSWyjoFsJmzxB7hGx99dHFGL0NHTeXmYMBZ98rolhwis8SKvLT082Ey5gAttkg" },
+    { name: "Veg Korma", type: "veg", price: 190, img: "https://images.slurrp.com/prod/recipe_images/transcribe/main%20course/Veg-Kurma.webp" },
+    { name: "Tandoori Chicken", type: "non-veg", price: 280, img: "https://www.easycookingwithmolly.com/wp-content/uploads/2023/11/air-fryer-whole-tandoori-chicken-3.jpg" },
+    { name: "Paneer Tikka", type: "veg", price: 220, img: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRjU3AT9r8228is-t5JHuLCk2InG0PID_mpRw&s" },
+    { name: "Dal Makhani", type: "veg", price: 160, img: "https://www.sharmispassions.com/wp-content/uploads/2012/05/dal-makhani7.jpg" },
+    { name: "Egg Curry", type: "non-veg", price: 170, img: "https://i.ytimg.com/vi/r32OddOyWa8/hq720.jpg?sqp=-oaymwEhCK4FEIIDSFryq4qpAxMIARUAAAAAGAElAADIQj0AgKJD&rs=AOn4CLD3o9zh5ZZMj4kuRWd3HaBnK2_m-w" },
+    { name: "Mix Veg", type: "veg", price: 150, img: "https://shwetainthekitchen.com/wp-content/uploads/2023/03/mixed-vegetable-curry.jpg" }
+  ];
+
+  let users = {}, currentUser = null, cart = [];
+
+  function register() {
+    const user = document.getElementById('username').value;
+    const pass = document.getElementById('password').value;
+    if (users[user]) return showMessage("Username already exists");
+    users[user] = pass;
+    showMessage("Registered successfully!");
+  }
+
+  function login() {
+    const user = document.getElementById('username').value;
+    const pass = document.getElementById('password').value;
+    if (users[user] !== pass) return showMessage("Invalid credentials");
+    currentUser = user;
+    showMessage(`Welcome, ${user}`);
+    document.getElementById('auth').classList.add('hidden');
+    document.getElementById('menuSection').classList.remove('hidden');
+    renderMenu('all');
+  }
+
+  function showMessage(msg) {
+    document.getElementById('authMessage').textContent = msg;
+  }
+
+  function renderMenu(filter) {
+    const list = document.getElementById('menuList');
+    list.innerHTML = '';
+    menuItems.filter(item => filter === 'all' || item.type === filter).forEach((item, index) => {
+      const div = document.createElement('div');
+      div.className = 'menu-item';
+      div.innerHTML = `
+        <img src="${item.img}" alt="${item.name}">
+        <div class="menu-details">
+          <strong>${item.name}</strong> - ₹${item.price}<br>
+          <input type="number" id="qty-${index}" min="1" value="1">
+        </div>
+        <button onclick="addToCart(${index})">Add</button>
+      `;
+      list.appendChild(div);
+    });
+  }
+
+  function filterMenu(value) {
+    renderMenu(value);
+  }
+
+  function addToCart(index) {
+    const qty = parseInt(document.getElementById(`qty-${index}`).value);
+    const item = { ...menuItems[index], quantity: qty };
+    cart.push(item);
+    alert(`${item.name} added to cart.`);
+  }
+
+  function viewCart() {
+    document.getElementById('cartSection').classList.remove('hidden');
+    const list = document.getElementById('cartItems');
+    let total = 0;
+    list.innerHTML = '';
+    cart.forEach(item => {
+      const li = document.createElement('li');
+      li.textContent = `${item.name} x${item.quantity} - ₹${item.price * item.quantity}`;
+      list.appendChild(li);
+      total += item.price * item.quantity;
+    });
+    document.getElementById('cartTotal').textContent = total;
+  }
+
+  function placeOrder() {
+    const name = document.getElementById('customerName').value;
+    const contact = document.getElementById('contactNumber').value;
+    const payment = document.getElementById('paymentMethod').value;
+    const id = 'ORD' + Math.floor(Math.random() * 10000);
+    const total = document.getElementById('cartTotal').textContent;
+    const now = new Date().toLocaleString();
+
+    if (!name || !contact) return alert("Please enter name and contact.");
+
+    document.getElementById('receiptName').textContent = name;
+    document.getElementById('receiptContact').textContent = contact;
+    document.getElementById('receiptPayment').textContent = payment;
+    document.getElementById('receiptDate').textContent = now;
+    document.getElementById('receiptTotal').textContent = total;
+    document.getElementById('orderId').textContent = id;
+
+    document.getElementById('orderStatus').classList.remove('hidden');
+    cart = [];
+    document.getElementById('cartItems').innerHTML = '';
+    document.getElementById('cartTotal').textContent = '0';
+  }
+
+  function toggleTheme() {
+    document.body.classList.toggle('dark-mode');
+  }
+</script>
+</body>
+</html>
