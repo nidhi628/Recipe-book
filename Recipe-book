@@ -1,0 +1,534 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Recipe Book with Menu</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600&family=Open+Sans&display=swap" rel="stylesheet" />
+<style>
+  /* Reset & basics */
+  * { box-sizing: border-box; }
+  body {
+    font-family: 'Open Sans', sans-serif;
+    margin:0; background:#f9f9f9; color:#333;
+    scroll-behavior: smooth;
+  }
+  h1,h2 { font-family: 'Playfair Display', serif; margin:0; }
+  h1 {
+    text-align:center; font-size:2.5rem; color:#4CAF50;
+    animation: fadeInDown 1s ease-out;
+    padding: 20px 0;
+  }
+  @keyframes fadeInDown {
+    from {opacity:0; transform:translateY(-30px);}
+    to {opacity:1; transform:translateY(0);}
+  }
+
+  /* Navbar styles */
+  .navbar {
+    background-color: #4caf50;
+    color: white;
+    padding: 15px 0;
+    position: sticky;
+    top: 0;
+    z-index: 999;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+  }
+  .nav-container {
+    max-width: 1100px;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 20px;
+  }
+  .logo {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.8rem;
+    font-weight: 700;
+    text-decoration: none;
+    color: white;
+    user-select:none;
+  }
+  .nav-links {
+    list-style: none;
+    display: flex;
+    gap: 20px;
+    margin: 0;
+  }
+  .nav-links li a {
+    color: white;
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 1rem;
+    padding: 6px 12px;
+    border-radius: 6px;
+    transition: background-color 0.3s ease;
+    user-select:none;
+  }
+  .nav-links li a:hover {
+    background-color: #388e3c;
+  }
+  @media (max-width: 600px) {
+    .nav-container {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+    .nav-links {
+      flex-direction: column;
+      width: 100%;
+    }
+    .nav-links li a {
+      padding: 12px 0;
+      display: block;
+      width: 100%;
+    }
+  }
+
+  /* Main container */
+  .container {
+    max-width:1100px; margin:auto; padding:20px;
+  }
+
+  /* Search, filter, form */
+  .search-bar, .controls, .add-form {
+    margin-bottom:20px; display:flex; flex-wrap:wrap; gap:10px; justify-content:center;
+    animation: fadeIn 1s ease-out;
+  }
+  @keyframes fadeIn {
+    from {opacity:0;}
+    to {opacity:1;}
+  }
+  input, select, textarea, button {
+    padding:10px; border-radius:8px; border:1px solid #ccc; font-size:1rem;
+  }
+  textarea { resize: vertical; min-height: 60px; }
+  button {
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    user-select:none;
+  }
+  button:hover {
+    background-color: #c8e6c9;
+  }
+
+  /* Recipe grid and cards */
+  .recipe-grid {
+    display:grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap:20px;
+    animation: fadeIn 2s ease;
+  }
+  .recipe-card {
+    border:1px solid #ddd;
+    border-radius:12px;
+    background:#fff;
+    box-shadow:0 4px 8px rgba(0,0,0,0.1);
+    overflow:hidden;
+    transition:transform 0.3s ease, box-shadow 0.3s ease;
+    cursor: pointer;
+    user-select: none;
+  }
+  .recipe-card:hover {
+    transform: scale(1.03);
+    box-shadow: 0 8px 16px rgba(0,0,0,0.2);
+  }
+  .recipe-card img {
+    width: 100%;
+    max-height: 200px;
+    object-fit: cover;
+  }
+  .recipe-details {
+    padding: 20px;
+  }
+  .recipe-details h2 {
+    margin-top: 0;
+    color: #e91e63;
+    font-size: 1.5rem;
+  }
+  .like-dislike-container {
+    margin-top: 10px;
+  }
+  .like-btn, .dislike-btn, .delete-btn {
+    margin-right: 10px;
+    padding: 10px 16px;
+    border: none;
+    border-radius: 5px;
+    font-size: 1rem;
+    user-select:none;
+  }
+  .like-btn {
+    background-color: #e0f7fa;
+  }
+  .dislike-btn {
+    background-color: #ffebee;
+  }
+  .liked {
+    background-color: #a5d6a7 !important;
+  }
+  .disliked {
+    background-color: #ef9a9a !important;
+  }
+  .delete-btn {
+    background-color: #ffcdd2;
+    color: #b71c1c;
+  }
+
+  /* Modal styles */
+  #recipeModal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0; top: 0;
+    width: 100%; height: 100%;
+    background-color: rgba(0,0,0,0.6);
+    justify-content: center;
+    align-items: center;
+  }
+  #recipeModal.show {
+    display: flex;
+  }
+  .modal-content {
+    background: white;
+    padding: 20px;
+    border-radius: 12px;
+    max-width: 500px;
+    max-height: 80vh;
+    overflow-y: auto;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+    position: relative;
+  }
+  .modal-content img {
+    max-width: 100%;
+    border-radius: 10px;
+    margin-bottom: 15px;
+  }
+  .close-btn {
+    position: absolute;
+    right: 15px; top: 10px;
+    font-size: 28px;
+    font-weight: bold;
+    border: none;
+    background: none;
+    cursor: pointer;
+    line-height: 1;
+    color: #666;
+    user-select:none;
+  }
+  .close-btn:hover {
+    color: #e91e63;
+  }
+
+  /* Section padding for scrolling targets */
+  section {
+    padding: 60px 20px;
+  }
+  #home {
+    min-height: 80vh;
+    background: #e8f5e9;
+    text-align: center;
+  }
+  #about, #contact {
+    background: #f1f8e9;
+  }
+
+</style>
+</head>
+<body>
+
+<!-- Navbar -->
+<nav class="navbar">
+  <div class="container nav-container">
+    <a href="#home" class="logo" onclick="scrollToSection('home')">Recipe Book 🍲</a>
+    <ul class="nav-links">
+      <li><a href="#home" onclick="scrollToSection('home')">Home</a></li>
+      <li><a href="#recipes" onclick="scrollToSection('recipeContainer')">Recipes</a></li>
+      <li><a href="#add" onclick="scrollToSection('addForm')">Add Recipe</a></li>
+      <li><a href="#about" onclick="scrollToSection('about')">About</a></li>
+      <li><a href="#contact" onclick="scrollToSection('contact')">Contact</a></li>
+    </ul>
+  </div>
+</nav>
+
+<!-- Home Section -->
+<section id="home">
+  <h1>Welcome to the Recipe Book</h1>
+  <p style="font-size:1.2rem; margin-top:10px;">Discover delicious veg & non-veg recipes, like, dislike, add, or delete your favorites!</p>
+</section>
+
+<!-- Main Container -->
+<div class="container">
+
+  <!-- Search & Filter -->
+  <div class="search-bar">
+    <input type="text" id="searchInput" placeholder="Search recipes..." />
+  </div>
+
+  <div class="controls">
+    <select id="categoryFilter">
+      <option value="all">All</option>
+      <option value="veg">Veg</option>
+      <option value="non-veg">Non-Veg</option>
+    </select>
+  </div>
+
+  <!-- Add Recipe Form -->
+  <div id="addForm" class="add-form">
+    <input type="text" id="title" placeholder="Recipe title" />
+    <input type="text" id="image" placeholder="Image URL" />
+    <textarea id="method" placeholder="Cooking method"></textarea>
+    <select id="category">
+      <option value="veg">Veg</option>
+      <option value="non-veg">Non-Veg</option>
+    </select>
+    <button onclick="addRecipe()">Add Recipe</button>
+  </div>
+
+  <!-- Recipes Grid -->
+  <div id="recipeContainer" class="recipe-grid"></div>
+
+</div>
+
+<!-- Modal -->
+<div id="recipeModal" onclick="closeModal(event)">
+  <div class="modal-content">
+    <button class="close-btn" onclick="closeModal(event)">&times;</button>
+    <h2 id="modalTitle"></h2>
+    <img id="modalImage" src="" alt="" />
+    <p id="modalMethod"></p>
+  </div>
+</div>
+
+<script>
+  const recipes = [
+    {
+      title: "Classic Veg Pizza",
+      image: "https://static.vecteezy.com/system/resources/previews/043/420/449/large_2x/classic-vegetarian-pizza-on-stone-free-photo.jpeg",
+      method: "Prepare dough, add tomato sauce, veggies and cheese, bake in oven at 220°C for 15 minutes.",
+      category: "veg",
+      likes: 0,
+      dislikes: 0,
+    },
+    {
+      title: "Chicken Biryani",
+      image: "https://ministryofcurry.com/wp-content/uploads/2024/06/chicken-biryani-5.jpg",
+      method: "Cook basmati rice, prepare chicken gravy with spices, layer and cook on low flame until done.",
+      category: "non-veg",
+      likes: 0,
+      dislikes: 0,
+    },
+    {
+      title: "Paneer Butter Masala",
+      image: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTZ1kcoiXbqzazXFd2VrQPaheS9YU7Bss8eHw&s",
+      method: "Cook paneer cubes in a rich tomato and butter gravy, serve hot with naan or rice.",
+      category: "veg",
+      likes: 0,
+      dislikes: 0,
+    },
+    {
+      title: "Grilled Fish",
+      image: "https://www.masalakorb.com/wp-content/uploads/2016/08/Grilled-Fish-Indian-Recipe-V5.jpg",
+      method: "Marinate fish with spices and grill on medium heat until cooked.",
+      category: "non-veg",
+      likes: 0,
+      dislikes: 0,
+    },
+    {
+      title: "Veg Pasta",
+      image: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTSSFhefG_W6fuBvlzWLLiCfz1ALVo4334L_g&s",
+      method: "Boil pasta, sauté veggies, mix with sauce and pasta, cook for 5 minutes.",
+      category: "veg",
+      likes: 0,
+      dislikes: 0,
+    },
+    {
+      title: "Butter Chicken",
+      image: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQt2Lym_RmKFLzovXRehhVxiMjbqBbrvRF7CQ&s",
+      method: "Cook chicken in creamy tomato butter sauce with Indian spices, serve hot with rice or naan.",
+      category: "non-veg",
+      likes: 0,
+      dislikes: 0,
+    },
+    {
+      title: "Mixed Veg Salad",
+      image: "https://simple-veganista.com/wp-content/uploads/2012/09/healthy-chopped-vegetable-salad-recipe-3.jpg",
+      method: "Chop fresh veggies, add dressing of lemon and herbs, toss and serve chilled.",
+      category: "veg",
+      likes: 0,
+      dislikes: 0,
+    },
+    {
+      title: "Egg Curry",
+      image: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSTeZjmcQFLAG6yt4hMsTdTYwLo7JZnZgZL0Q&s",
+      method: "Boil eggs, prepare spicy onion-tomato gravy, add eggs and simmer for 10 minutes.",
+      category: "non-veg",
+      likes: 0,
+      dislikes: 0,
+    },
+    {
+      title: "Veg Spring Rolls",
+      image: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR0KlVSZdI6QG2XbRud1hUu2qTpAGMDgRZLwg&s",
+      method: "Fill spring roll wrappers with mixed veggies, fry until crispy and golden.",
+      category: "veg",
+      likes: 0,
+      dislikes: 0,
+    },
+    {
+      title: "Lamb Kebabs",
+      image: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTI61TFKLBqjFaKVy5p6vSp0Ven_FpgiW-XJw&s",
+      method: "Mix minced lamb with spices, form skewers, grill until cooked and serve with mint chutney.",
+      category: "non-veg",
+      likes: 0,
+      dislikes: 0,
+    }
+  ];
+
+  // Save likes/dislikes in-memory only for simplicity.
+
+  function renderRecipes(searchText = '', category = 'all') {
+    const container = document.getElementById('recipeContainer');
+    container.innerHTML = '';
+
+    let filtered = recipes.filter(recipe => {
+      const matchesText = recipe.title.toLowerCase().includes(searchText.toLowerCase());
+      const matchesCategory = category === 'all' || recipe.category === category;
+      return matchesText && matchesCategory;
+    });
+
+    if(filtered.length === 0) {
+      container.innerHTML = `<p style="grid-column:1/-1; text-align:center; font-style:italic; color:#666;">No recipes found.</p>`;
+      return;
+    }
+
+    filtered.forEach((recipe, index) => {
+      const card = document.createElement('div');
+      card.className = 'recipe-card';
+      card.innerHTML = `
+        <img src="${recipe.image}" alt="${recipe.title}" />
+        <div class="recipe-details">
+          <h2>${recipe.title}</h2>
+          <div class="like-dislike-container">
+            <button class="like-btn ${recipe.liked ? 'liked' : ''}" title="Like">&#128077; ${recipe.likes}</button>
+            <button class="dislike-btn ${recipe.disliked ? 'disliked' : ''}" title="Dislike">&#128078; ${recipe.dislikes}</button>
+            <button class="delete-btn" title="Delete Recipe">&#10060;</button>
+          </div>
+        </div>
+      `;
+
+      // Double click to open modal
+      card.addEventListener('dblclick', () => openModal(recipe.title, recipe.image, recipe.method));
+
+      // Like button click
+      card.querySelector('.like-btn').addEventListener('click', e => {
+        e.stopPropagation();
+        if(recipe.liked) {
+          recipe.likes--;
+          recipe.liked = false;
+        } else {
+          recipe.likes++;
+          recipe.liked = true;
+          if(recipe.disliked) {
+            recipe.dislikes--;
+            recipe.disliked = false;
+          }
+        }
+        applyFilters();
+      });
+
+      // Dislike button click
+      card.querySelector('.dislike-btn').addEventListener('click', e => {
+        e.stopPropagation();
+        if(recipe.disliked) {
+          recipe.dislikes--;
+          recipe.disliked = false;
+        } else {
+          recipe.dislikes++;
+          recipe.disliked = true;
+          if(recipe.liked) {
+            recipe.likes--;
+            recipe.liked = false;
+          }
+        }
+        applyFilters();
+      });
+
+      // Delete button click
+      card.querySelector('.delete-btn').addEventListener('click', e => {
+        e.stopPropagation();
+        if(confirm(`Are you sure you want to delete "${recipe.title}"?`)) {
+          recipes.splice(recipes.indexOf(recipe), 1);
+          applyFilters();
+        }
+      });
+
+      container.appendChild(card);
+    });
+  }
+
+  function addRecipe() {
+    const title = document.getElementById('title').value.trim();
+    const image = document.getElementById('image').value.trim();
+    const method = document.getElementById('method').value.trim();
+    const category = document.getElementById('category').value;
+
+    if(!title || !image || !method) {
+      alert('Please fill all fields before adding a recipe.');
+      return;
+    }
+
+    recipes.push({title, image, method, category, likes:0, dislikes:0});
+    document.getElementById('title').value = '';
+    document.getElementById('image').value = '';
+    document.getElementById('method').value = '';
+    document.getElementById('category').value = 'veg';
+
+    applyFilters();
+  }
+
+  function openModal(title, image, method) {
+    document.getElementById('modalTitle').textContent = title;
+    const modalImage = document.getElementById('modalImage');
+    modalImage.src = image;
+    modalImage.alt = title;
+    document.getElementById('modalMethod').textContent = method;
+    document.getElementById('recipeModal').classList.add('show');
+  }
+
+  function closeModal(event) {
+    if(!event || event.target.id === 'recipeModal' || event.target.classList.contains('close-btn')) {
+      document.getElementById('recipeModal').classList.remove('show');
+    }
+  }
+
+  function applyFilters() {
+    const searchText = document.getElementById('searchInput').value;
+    const category = document.getElementById('categoryFilter').value;
+    renderRecipes(searchText, category);
+  }
+
+  document.getElementById('searchInput').addEventListener('input', applyFilters);
+  document.getElementById('categoryFilter').addEventListener('change', applyFilters);
+
+  function scrollToSection(id) {
+    const el = document.getElementById(id);
+    if(el) el.scrollIntoView({behavior:'smooth', block:'start'});
+  }
+
+  // Initial render
+  renderRecipes();
+</script>
+
+<!-- About Section -->
+<section id="about">
+  <h2>About Us</h2>
+  <p>Welcome to our Recipe Book! We provide a collection of delicious vegetarian and non-vegetarian recipes. You can browse, like, dislike, add, or remove recipes easily. Happy cooking!</p>
+</section>
+
+<!-- Contact Section -->
+<section id="contact">
+  <h2>Contact</h2>
+  <p>Email: recipes@.com</p>
+  <p>Phone: +91 080 567-8901</p>
+  </section>
+</body>
+</html>
