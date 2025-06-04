@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Farmer Government Schemes Portal</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    /* Base styles */
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      margin: 0;
+      background: #e6f0e9;
+      color: #2e7d32;
+      overflow-x: hidden;
+    }
+    header {
+      background: linear-gradient(90deg, #2e7d32, #60ad5e);
+      color: white;
+      padding: 20px;
+      text-align: center;
+      font-size: 2.5rem;
+      font-weight: 700;
+      animation: colorPulse 6s ease-in-out infinite;
+      user-select: none;
+    }
+    @keyframes colorPulse {
+      0%, 100% { color: #fff; }
+      50% { color: #d1f0c4; }
+    }
+    .language-switch {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      z-index: 1100;
+    }
+    .language-switch button {
+      background: #60ad5e;
+      border: none;
+      margin-left: 5px;
+      padding: 8px 12px;
+      color: white;
+      border-radius: 5px;
+      cursor: pointer;
+      font-weight: 600;
+      transition: background-color 0.3s ease;
+    }
+    .language-switch button:hover {
+      background-color: #3e6f2e;
+    }
+    .toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      align-items: center;
+      gap: 10px;
+      background: #fff;
+      padding: 15px;
+      box-shadow: 0 2px 8px rgb(0 0 0 / 0.1);
+      margin-top: 10px;
+      position: relative;
+      z-index: 1;
+    }
+    .toolbar input, .toolbar select {
+      padding: 10px 12px;
+      font-size: 1rem;
+      border: 1.5px solid #60ad5e;
+      border-radius: 6px;
+      outline-offset: 2px;
+      transition: border-color 0.3s ease;
+      width: 200px;
+    }
+    .toolbar input:focus, .toolbar select:focus {
+      border-color: #2e7d32;
+    }
+    .toolbar button {
+      background: #2e7d32;
+      color: white;
+      border: none;
+      padding: 11px 18px;
+      border-radius: 7px;
+      cursor: pointer;
+      font-size: 1rem;
+      font-weight: 600;
+      box-shadow: 0 4px 8px rgb(46 125 50 / 0.3);
+      transition: background-color 0.3s ease, transform 0.2s ease;
+    }
+    .toolbar button:hover {
+      background: #1b4612;
+      transform: scale(1.05);
+    }
+
+    /* Container and Cards */
+    .container {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      padding: 25px 15px;
+      gap: 25px;
+      max-width: 1200px;
+      margin: 0 auto 50px;
+    }
+    .card {
+      background: white;
+      border-radius: 14px;
+      width: 280px;
+      box-shadow: 0 6px 15px rgb(46 125 50 / 0.15);
+      cursor: pointer;
+      overflow: hidden;
+      transform-origin: center;
+      animation: fadeScaleIn 0.6s ease forwards;
+      opacity: 0;
+      transform: scale(0.8);
+      transition: transform 0.25s ease;
+      user-select: none;
+    }
+    .card:hover {
+      transform: scale(1.05);
+      box-shadow: 0 10px 25px rgb(46 125 50 / 0.3);
+    }
+    .card img {
+      width: 100%;
+      height: 170px;
+      object-fit: cover;
+      border-bottom: 4px solid #60ad5e;
+      transition: transform 0.3s ease;
+    }
+    .card:hover img {
+      transform: scale(1.1);
+    }
+    .card-content {
+      padding: 18px 20px;
+    }
+    .card-content h3 {
+      margin: 0 0 10px;
+      font-size: 1.25rem;
+      color: #2e7d32;
+    }
+    .card-content p {
+      margin: 0;
+      font-size: 0.9rem;
+      color: #496a40;
+    }
+
+    /* Animations */
+    @keyframes fadeScaleIn {
+      to {
+        opacity: 1;
+        transform: scale(1);
+      }
+    }
+
+    /* Modals */
+    .modal, .form-modal {
+      display: none;
+      position: fixed;
+      top: 0; left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: rgba(46, 125, 50, 0.85);
+      backdrop-filter: blur(6px);
+      justify-content: center;
+      align-items: center;
+      z-index: 1500;
+      animation: fadeInModal 0.3s ease forwards;
+      overflow-y: auto;
+      padding: 15px;
+    }
+    .modal-content, .form-content {
+      background: white;
+      border-radius: 14px;
+      padding: 25px 30px;
+      max-width: 600px;
+      width: 100%;
+      position: relative;
+      box-shadow: 0 10px 35px rgb(46 125 50 / 0.25);
+      animation: slideUp 0.4s ease forwards;
+    }
+    .close-btn {
+      position: absolute;
+      top: 18px;
+      right: 20px;
+      font-size: 28px;
+      color: #60ad5e;
+      cursor: pointer;
+      transition: color 0.3s ease;
+      user-select: none;
+    }
+    .close-btn:hover {
+      color: #2e7d32;
+    }
+    @keyframes fadeInModal {
+      from {opacity: 0;}
+      to {opacity: 1;}
+    }
+    @keyframes slideUp {
+      from {opacity: 0; transform: translateY(50px);}
+      to {opacity: 1; transform: translateY(0);}
+    }
+
+    /* Form styles */
+    form input, form textarea, form select {
+      width: 100%;
+      padding: 12px 15px;
+      margin-top: 15px;
+      border: 2px solid #60ad5e;
+      border-radius: 8px;
+      font-size: 1rem;
+      outline-offset: 3px;
+      transition: border-color 0.3s ease;
+      resize: vertical;
+      font-family: inherit;
+    }
+    form input:focus, form textarea:focus, form select:focus {
+      border-color: #2e7d32;
+    }
+    form button {
+      background: #2e7d32;
+      color: white;
+      font-weight: 700;
+      border: none;
+      padding: 12px 0;
+      margin-top: 25px;
+      border-radius: 10px;
+      font-size: 1.1rem;
+      cursor: pointer;
+      box-shadow: 0 4px 10px rgb(46 125 50 / 0.35);
+      transition: background-color 0.3s ease, transform 0.2s ease;
+      width: 100%;
+    }
+    form button:hover {
+      background: #1b4612;
+      transform: scale(1.05);
+    }
+
+    /* Application list style */
+    #applicationList > div {
+      border-bottom: 1px solid #c1e2c6;
+      padding: 12px 0;
+      font-size: 0.95rem;
+      line-height: 1.5;
+      color: #3e6f29;
+    }
+    #applicationList > div:last-child {
+      border-bottom: none;
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      .toolbar {
+        flex-direction: column;
+        gap: 15px;
+      }
+      .card {
+        width: 90%;
+      }
+      .language-switch {
+        top: 10px;
+        right: 10px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+<header id="main-title">Government Schemes for Farmers</header>
+<div class="language-switch">
+  <button onclick="switchLanguage('en')">English</button>
+  <button onclick="switchLanguage('hi')">हिंदी</button>
+</div>
+
+<div class="toolbar">
+  <input type="text" id="search" placeholder="Search..."/>
+  <select id="category">
+    <option value="all">All</option>
+    <option value="financial">Financial Aid</option>
+    <option value="insurance">Insurance</option>
+    <option value="loan">Loan</option>
+  </select>
+  <button onclick="openApplicationList()">View Applications</button>
+</div>
+
+<div class="container" id="schemeContainer"></div>
+
+<!-- Scheme Detail Modal -->
+<div class="modal" id="schemeModal">
+  <div class="modal-content">
+    <span class="close-btn" onclick="closeModal()">&times;</span>
+    <h2 id="modalTitle"></h2>
+    <p id="modalDesc"></p>
+    <button onclick="openForm()">Apply Now</button>
+  </div>
+</div>
+
+<!-- Application Form Modal -->
+<div class="form-modal" id="formModal">
+  <div class="form-content">
+    <span class="close-btn" onclick="closeForm()">&times;</span>
+    <h3>Application Form</h3>
+    <form id="applicationForm">
+      <input type="text" id="farmerName" placeholder="Farmer Name" required />
+      <input type="text" id="location" placeholder="Village / District" required />
+      <input type="tel" id="contact" placeholder="Contact Number" required />
+      <select id="schemeSelect" required>
+        <option value="">Select Scheme</option>
+        <option value="PM Kisan">PM Kisan Samman Nidhi</option>
+        <option value="PMFBY">PM Fasal Bima Yojana</option>
+        <option value="KCC">Kisan Credit Card</option>
+      </select>
+      <textarea id="message" placeholder="Any Message (optional)"></textarea>
+      <button type="submit">Submit Application</button>
+    </form>
+  </div>
+</div>
+
+<!-- View Applications Modal -->
+<div class="modal" id="applicationsModal">
+  <div class="modal-content">
+    <span class="close-btn" onclick="closeApplicationList()">&times;</span>
+    <h3>Submitted Applications</h3>
+    <div id="applicationList"></div>
+  </div>
+</div>
+
+<script>
+  const schemes = [
+    {
+      title_en: "PM Kisan Samman Nidhi",
+      title_hi: "प्रधानमंत्री किसान सम्मान निधि",
+      category: "financial",
+      image: "https://images.unsplash.com/photo-1501004318641-b39e6451bec6?auto=format&fit=crop&w=800&q=80",
+      desc_en: "Provides ₹6000 per year in 3 installments to eligible farmers.",
+      desc_hi: "पात्र किसानों को ₹6000 प्रतिवर्ष 3 किस्तों में प्रदान किए जाते हैं।"
+    },
+    {
+      title_en: "PM Fasal Bima Yojana",
+      title_hi: "प्रधानमंत्री फसल बीमा योजना",
+      category: "insurance",
+      image: "https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=800&q=80",
+      desc_en: "Crop insurance scheme for protection against crop loss.",
+      desc_hi: "फसल क्षति से सुरक्षा हेतु फसल बीमा योजना।"
+    },
+    {
+      title_en: "Kisan Credit Card",
+      title_hi: "किसान क्रेडिट कार्ड",
+      category: "loan",
+      image: "https://kj1bcdn.b-cdn.net/media/32557/kisan-credit-card.jpeg",
+      desc_en: "Easy credit facility for farmers through KCC.",
+      desc_hi: "किसानों के लिए आसान क्रेडिट सुविधा।"
+    }
+  ];
+
+  let currentLanguage = 'en';
+
+  const schemeContainer = document.getElementById('schemeContainer');
+  const searchInput = document.getElementById('search');
+  const categorySelect = document.getElementById('category');
+
+  function renderSchemes() {
+    const filterText = searchInput.value.toLowerCase();
+    const filterCat = categorySelect.value;
+
+    schemeContainer.innerHTML = '';
+
+    schemes.forEach((scheme, idx) => {
+      const title = scheme[`title_${currentLanguage}`];
+      const desc = scheme[`desc_${currentLanguage}`];
+
+      if ((filterCat === "all" || scheme.category === filterCat) &&
+          title.toLowerCase().includes(filterText)) {
+        const card = document.createElement("div");
+        card.className = "card";
+        card.style.animationDelay = `${idx * 0.15}s`; // stagger animation delay
+        card.innerHTML = `
+          <img src="${scheme.image}" alt="${title}" />
+          <div class="card-content">
+            <h3>${title}</h3>
+            <p>${desc.substring(0, 60)}...</p>
+          </div>
+        `;
+        card.onclick = () => showModal(title, desc);
+        schemeContainer.appendChild(card);
+      }
+    });
+  }
+
+  function showModal(title, desc) {
+    document.getElementById("modalTitle").textContent = title;
+    document.getElementById("modalDesc").textContent = desc;
+    document.getElementById("schemeModal").style.display = "flex";
+  }
+
+  function closeModal() {
+    document.getElementById("schemeModal").style.display = "none";
+  }
+
+  function openForm() {
+    closeModal();
+    document.getElementById("formModal").style.display = "flex";
+  }
+
+  function closeForm() {
+    document.getElementById("formModal").style.display = "none";
+  }
+
+  // Application Submit
+  document.getElementById("applicationForm").addEventListener("submit", function(e) {
+    e.preventDefault();
+    const name = document.getElementById("farmerName").value.trim();
+    const location = document.getElementById("location").value.trim();
+    const contact = document.getElementById("contact").value.trim();
+    const scheme = document.getElementById("schemeSelect").value;
+    const message = document.getElementById("message").value.trim();
+
+    if (!name || !location || !contact || !scheme) {
+      alert("Please fill all required fields.");
+      return;
+    }
+
+    const application = {
+      name, location, contact, scheme, message,
+      date: new Date().toLocaleString()
+    };
+
+    let apps = JSON.parse(localStorage.getItem("applications")) || [];
+    apps.push(application);
+    localStorage.setItem("applications", JSON.stringify(apps));
+
+    alert("Application submitted successfully!");
+    this.reset();
+    closeForm();
+  });
+
+  // View Applications
+  function openApplicationList() {
+    const appList = document.getElementById("applicationList");
+    const apps = JSON.parse(localStorage.getItem("applications")) || [];
+    if (apps.length === 0) {
+      appList.innerHTML = "<p>No applications submitted yet.</p>";
+    } else {
+      appList.innerHTML = apps.map(app => `
+        <div>
+          <strong>Name:</strong> ${app.name}<br>
+          <strong>Location:</strong> ${app.location}<br>
+          <strong>Contact:</strong> ${app.contact}<br>
+          <strong>Scheme:</strong> ${app.scheme}<br>
+          <strong>Message:</strong> ${app.message || "N/A"}<br>
+          <strong>Date:</strong> ${app.date}
+        </div>
+      `).join('');
+    }
+    document.getElementById("applicationsModal").style.display = "flex";
+  }
+
+  function closeApplicationList() {
+    document.getElementById("applicationsModal").style.display = "none";
+  }
+
+  function switchLanguage(lang) {
+    currentLanguage = lang;
+    document.getElementById("main-title").textContent =
+      lang === "hi" ? "किसानों के लिए सरकारी योजनाएं" : "Government Schemes for Farmers";
+    renderSchemes();
+  }
+
+  searchInput.addEventListener("input", renderSchemes);
+  categorySelect.addEventListener("change", renderSchemes);
+
+  // Initial render
+  renderSchemes();
+</script>
+
+</body>
+</html>
